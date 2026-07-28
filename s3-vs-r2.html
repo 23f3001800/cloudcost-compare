@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AWS S3 vs Cloudflare R2: The Egress Math (2026)</title>
+<meta name="description" content="A direct cost comparison of AWS S3 and Cloudflare R2 at 1 TB, 10 TB and 100 TB of monthly egress, plus the migration caveats nobody mentions.">
+<link rel="canonical" href="https://23f3001800.github.io/cloudcost-compare/s3-vs-r2.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:title" content="AWS S3 vs Cloudflare R2: The Egress Math (2026)">
+<meta property="og:description" content="A direct cost comparison of AWS S3 and Cloudflare R2 at 1 TB, 10 TB and 100 TB of monthly egress, plus the migration caveats nobody mentions.">
+<meta property="og:url" content="https://23f3001800.github.io/cloudcost-compare/s3-vs-r2.html">
+<meta property="og:site_name" content="CloudCost Compare">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AWS S3 vs Cloudflare R2: The Egress Math (2026)">
+<meta name="twitter:description" content="A direct cost comparison of AWS S3 and Cloudflare R2 at 1 TB, 10 TB and 100 TB of monthly egress, plus the migration caveats nobody mentions.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%232f6df6'/%3E%3Ctext%20x='16'%20y='23'%20font-size='19'%20font-family='sans-serif'%20font-weight='700'%20fill='white'%20text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/base.css">
+<style>:root{--accent:#2f6df6;--accent-soft:rgba(47,109,246,.12);}</style>
+<script>
+// Applied before first paint so a dark-mode user never sees a white flash.
+(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.dataset.theme=t;}})();
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"CloudCost Compare","url":"https://23f3001800.github.io/cloudcost-compare/","applicationCategory":"DeveloperApplication","operatingSystem":"Any (browser-based)","description":"Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces \u2014 egress included.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://23f3001800.github.io/cloudcost-compare/"},{"@type":"ListItem","position":2,"name":"S3 vs R2","item":"https://23f3001800.github.io/cloudcost-compare/s3-vs-r2.html"}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="wrap head-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span class="brand-text">CloudCost Compare</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle colour theme">
+      <span class="ico-sun" aria-hidden="true">&#9788;</span><span class="ico-moon" aria-hidden="true">&#9790;</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero">
+  <div class="wrap hero-inner">
+    <span class="eyebrow">Comparison</span>
+    <h1>AWS S3 vs Cloudflare R2: the egress math</h1>
+    <p class="lede">Both store objects behind an S3-compatible API. The difference is one line on the invoice, and at scale that line is larger than everything else combined.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap prose">
+    <h2>The short version</h2>
+    <p>S3 charges $0.023 per GB-month to store and <strong>$0.09 per GB to serve</strong>. R2 charges $0.015 per GB-month to store and <strong>$0 to serve</strong>. Storage is 35% cheaper on R2; egress is infinitely cheaper. So the answer to "which is cheaper" is entirely determined by how much data leaves the bucket.</p>
+
+    <h2>What it costs at three scales</h2>
+    <p>Assume 1 TB stored and typical request volumes, varying only monthly egress.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Monthly egress</th><th class="num">AWS S3</th><th class="num">Cloudflare R2</th><th class="num">R2 saves</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1 TB</td><td class="num">$105</td><td class="num">$21</td><td class="num">$84/mo</td></tr>
+          <tr><td>10 TB</td><td class="num">$915</td><td class="num">$21</td><td class="num">$894/mo</td></tr>
+          <tr><td>100 TB</td><td class="num">$9,015</td><td class="num">$21</td><td class="num">$8,994/mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.86rem;color:var(--ink-3)">Storage held constant at 1 TB. S3 egress billed at $0.09/GB after the first 100 GB free. R2 storage at $0.015/GB-month. Request fees excluded for clarity — run your own numbers in the <a href="index.html">calculator</a>.</p>
+
+    <p>Notice the R2 column does not move. That is the entire pitch: your bandwidth bill stops being a function of your success.</p>
+
+    <h2>Where S3 is still the right answer</h2>
+    <p>The egress table makes R2 look unconditionally better. It is not, and pretending otherwise would get you into trouble:</p>
+    <ul>
+      <li><strong>You are deep in the AWS ecosystem.</strong> If Lambda, Athena, Glue, EMR or SageMaker read directly from your buckets, moving to R2 means paying egress <em>out of R2</em> is free but your compute is now cross-cloud, adding latency and often more expensive AWS ingress paths elsewhere.</li>
+      <li><strong>You need storage classes.</strong> S3 has Glacier, Glacier Deep Archive, Intelligent-Tiering and One Zone-IA. For genuinely cold data, Deep Archive at ~$0.00099/GB-month is far below R2's flat $0.015.</li>
+      <li><strong>You need strong regional control.</strong> R2 abstracts location by design. Some compliance regimes require you to name and pin the region.</li>
+      <li><strong>Your egress is small.</strong> Under roughly 100 GB/month, S3's free egress allowance means the two are close enough that migration is not worth an engineer's week.</li>
+    </ul>
+
+    <h2>The migration caveats nobody puts in the pricing table</h2>
+    <ol>
+      <li><strong>S3-compatible is not S3-identical.</strong> R2 does not implement every S3 API. Object versioning, some multipart edge cases, and several ACL behaviours differ. Audit your SDK calls before committing.</li>
+      <li><strong>You pay AWS to leave.</strong> Migrating 50 TB out of S3 costs roughly $4,500 in egress, once. At 10 TB/month of ongoing traffic that pays back in about five months, but it is real money up front and it surprises people.</li>
+      <li><strong>Class A operations are not free.</strong> R2 charges $4.50 per million writes. A workload doing heavy small-object writes or frequent LIST calls can run up a bill that the zero-egress headline hides.</li>
+      <li><strong>Egress is free, but Cloudflare's terms still apply.</strong> R2 is meant to serve your application, not to be a public CDN origin for arbitrary redistribution.</li>
+    </ol>
+
+    <h2>How to decide in two minutes</h2>
+    <p>Work out your egress-to-storage ratio. Take last month's bytes served and divide by average bytes stored.</p>
+    <ul>
+      <li><strong>Ratio under 1</strong> — you store more than you serve. Backblaze B2 at $0.006/GB probably beats both. Check the <a href="index.html">full comparison</a>.</li>
+      <li><strong>Ratio 1 to 3</strong> — close call. B2's free egress allowance (3x stored volume) may cover you entirely.</li>
+      <li><strong>Ratio above 3</strong> — R2 wins, and the gap widens every month you grow.</li>
+    </ul>
+
+    <div class="ad-slot"></div>
+
+    <h2>Run it on your own numbers</h2>
+    <p>General guidance only gets you so far, because the answer genuinely inverts depending on your ratio. The <a href="index.html">cost calculator</a> takes your storage, egress and request volumes and compares all seven major providers at once, with the per-line breakdown so you can check it against your current invoice.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span class="brand-text">CloudCost Compare</span>
+        </div>
+        <p class="foot-tag">Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces — egress included.</p>
+        <p class="foot-note">Runs entirely in your browser. Nothing you type is uploaded or stored.</p>
+      </div>
+      <div class="foot-col">
+        <h3>This site</h3>
+        <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+      </div>
+      <div class="foot-col">
+        <h3>More free tools</h3>
+        <a href="https://23f3001800.github.io/llm-cost-lab/" title="API vs self-hosted GPU break-even">LLM Cost Lab</a><a href="https://23f3001800.github.io/freelance-take-home/" title="Rate & tax by country">Freelance Take-Home</a><a href="https://23f3001800.github.io/equity-offer-lab/" title="RSUs, options & dilution">Equity Offer Lab</a><a href="https://23f3001800.github.io/openpolicy/" title="Privacy policy & cookie notices">OpenPolicy</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <p>&copy; 2026 CloudCost Compare. Figures are estimates for planning only &mdash; not financial, tax or legal advice.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/base.js"></script>
+<script src="assets/monetize.js"></script>
+</body>
+</html>

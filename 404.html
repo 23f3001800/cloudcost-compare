@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cloud Storage Cost Calculator — S3 vs R2 vs B2 vs Wasabi (2026)</title>
+<meta name="description" content="Compare real monthly object storage costs across AWS S3, Cloudflare R2, Backblaze B2, Wasabi, Google Cloud, Azure and DigitalOcean Spaces. Egress and request fees included. Free, no signup.">
+<link rel="canonical" href="https://23f3001800.github.io/cloudcost-compare/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cloud Storage Cost Calculator: S3 vs R2 vs Backblaze B2">
+<meta property="og:description" content="Compare real monthly object storage costs across AWS S3, Cloudflare R2, Backblaze B2, Wasabi, Google Cloud, Azure and DigitalOcean Spaces. Egress and request fees included. Free, no signup.">
+<meta property="og:url" content="https://23f3001800.github.io/cloudcost-compare/">
+<meta property="og:site_name" content="CloudCost Compare">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cloud Storage Cost Calculator: S3 vs R2 vs Backblaze B2">
+<meta name="twitter:description" content="Compare real monthly object storage costs across AWS S3, Cloudflare R2, Backblaze B2, Wasabi, Google Cloud, Azure and DigitalOcean Spaces. Egress and request fees included. Free, no signup.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%232f6df6'/%3E%3Ctext%20x='16'%20y='23'%20font-size='19'%20font-family='sans-serif'%20font-weight='700'%20fill='white'%20text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/base.css">
+<style>:root{--accent:#2f6df6;--accent-soft:rgba(47,109,246,.12);}</style>
+<script>
+// Applied before first paint so a dark-mode user never sees a white flash.
+(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.dataset.theme=t;}})();
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"CloudCost Compare","url":"https://23f3001800.github.io/cloudcost-compare/","applicationCategory":"DeveloperApplication","operatingSystem":"Any (browser-based)","description":"Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces \u2014 egress included.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://23f3001800.github.io/cloudcost-compare/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why is my S3 bill so much higher than the storage price suggests?","acceptedAnswer":{"@type":"Answer","text":"Because storage is rarely the largest line. AWS charges $0.09 per GB to send data out to the internet after the first 100 GB each month. If you store 1 TB but serve 10 TB, egress is roughly 80% of your bill and the $0.023/GB storage rate is almost irrelevant."}},{"@type":"Question","name":"Is Cloudflare R2 really free to egress?","acceptedAnswer":{"@type":"Answer","text":"Yes, R2 charges $0 for egress with no cap, which is the whole basis of its pricing model. You still pay $0.015/GB-month for storage and per-request Class A and Class B operation fees, so R2 is not free \u2014 it is just free at the bandwidth line."}},{"@type":"Question","name":"Which object storage is cheapest overall?","acceptedAnswer":{"@type":"Answer","text":"It depends entirely on your egress-to-storage ratio. If you store a lot and serve little, Backblaze B2 at $0.006/GB usually wins. If you serve far more than you store, Cloudflare R2's zero egress wins by a wide margin. Enter your own numbers above rather than trusting a general answer."}},{"@type":"Question","name":"Does this tool send my numbers anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. The calculator is plain JavaScript running in your browser. There is no backend, no account, and no analytics on your inputs."}}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="wrap head-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span class="brand-text">CloudCost Compare</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle colour theme">
+      <span class="ico-sun" aria-hidden="true">&#9788;</span><span class="ico-moon" aria-hidden="true">&#9790;</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero">
+  <div class="wrap hero-inner">
+    <span class="eyebrow">Free · No signup · 7 providers</span>
+    <h1>What object storage actually costs you</h1>
+    <p class="lede">Storage price is the number vendors advertise. Egress is the number that shows up on your bill. This compares AWS S3, Cloudflare R2, Backblaze B2, Wasabi, Google Cloud, Azure Blob and DigitalOcean Spaces on all of it — storage, bandwidth, requests and minimum billing terms.</p>
+    <div class="trust">
+      <span>Runs in your browser</span>
+      <span>No account, no email</span>
+      <span>List prices verified <time id="verified-date">2026-07-27</time></span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="tool-grid">
+
+      <form class="card" id="calc" autocomplete="off">
+        <h2>Your workload</h2>
+        <p style="color:var(--ink-2);font-size:.9rem;margin:8px 0 20px">Not sure? Start from a preset and adjust.</p>
+
+        <div class="chips" style="margin-bottom:22px">
+          <button type="button" class="chip" data-preset='{"storage":50,"egress":200,"writes":10000,"reads":500000}'>Static site</button>
+          <button type="button" class="chip" data-preset='{"storage":2000,"egress":8000,"writes":500000,"reads":20000000}' aria-pressed="true">SaaS uploads</button>
+          <button type="button" class="chip" data-preset='{"storage":5000,"egress":40000,"writes":50000,"reads":5000000}'>Media library</button>
+          <button type="button" class="chip" data-preset='{"storage":20000,"egress":500,"writes":200000,"reads":100000}'>Backup archive</button>
+        </div>
+
+        <div class="field">
+          <label for="in-storage">Data stored (GB)</label>
+          <input type="number" id="in-storage" value="2000" min="0" step="10" inputmode="decimal">
+          <p class="hint">Average volume held over the month. 1 TB = 1000 GB.</p>
+        </div>
+
+        <div class="field">
+          <label for="in-egress">Data served out (GB / month)</label>
+          <input type="number" id="in-egress" value="8000" min="0" step="10" inputmode="decimal">
+          <p class="hint">Downloads to the public internet. This is usually the line that decides the winner.</p>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="in-writes">Writes / month</label>
+            <input type="number" id="in-writes" value="500000" min="0" step="1000" inputmode="numeric">
+            <p class="hint">PUT, COPY, POST, LIST.</p>
+          </div>
+          <div class="field">
+            <label for="in-reads">Reads / month</label>
+            <input type="number" id="in-reads" value="20000000" min="0" step="1000" inputmode="numeric">
+            <p class="hint">GET, HEAD.</p>
+          </div>
+        </div>
+
+        <div class="note">
+          Figures use public list prices for standard/hot tiers in a US region. Committed-use discounts, reserved capacity and enterprise agreements are not modelled — see <a href="methodology.html">methodology</a>.
+        </div>
+      </form>
+
+      <div>
+        <div class="card">
+          <div class="result-head">
+            <p class="result-label">Cheapest for this workload</p>
+            <p class="result-big" id="out-best-name">—</p>
+            <p class="result-sub"><strong id="out-best-cost">—</strong> · <span id="out-saving-pct">—</span> than the most expensive option</p>
+          </div>
+
+          <dl class="stat-row">
+            <div class="stat"><dt>Per year</dt><dd id="out-annual">—</dd></div>
+            <div class="stat"><dt>You save / mo</dt><dd id="out-saving">—</dd></div>
+            <div class="stat"><dt>Cost per GB served</dt><dd id="out-per-gb">—</dd></div>
+          </dl>
+
+          <h3 style="margin:24px 0 14px">Monthly cost, all providers</h3>
+          <div class="bars" id="bars"></div>
+
+          <div class="verdict" id="verdict">Enter your numbers to compare.</div>
+          <div id="caveats"></div>
+        </div>
+
+        <div class="ad-slot" data-ad-format="auto"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Full cost breakdown</h2>
+      <p>Every line that makes up the monthly figure, so you can check the maths against your own invoice instead of trusting a single number.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th class="num">Storage</th>
+            <th class="num">Egress</th>
+            <th class="num">Requests</th>
+            <th class="num">Monthly</th>
+            <th class="num">Yearly</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="affiliate">
+      <h3>Move your data</h3>
+      <p>If the comparison above points somewhere new, these are the signup pages. Some are referral links, which is how this tool stays free — the numbers above are computed from published list prices either way and are not weighted by payout.</p>
+      <div class="affiliate-list">
+        <a href="https://www.cloudflare.com/developer-platform/products/r2/" rel="sponsored nofollow noopener" target="_blank">Cloudflare R2 <span>Zero egress · 10 GB free tier</span></a>
+        <a href="https://www.backblaze.com/cloud-storage" rel="sponsored nofollow noopener" target="_blank">Backblaze B2 <span>Cheapest at rest · 10 GB free</span></a>
+        <a href="https://wasabi.com/cloud-object-storage" rel="sponsored nofollow noopener" target="_blank">Wasabi <span>Flat rate · 1 TB minimum</span></a>
+      </div>
+      <p class="disclosure">Disclosure: links marked sponsored may earn a commission. They never affect the ranking above, which is pure arithmetic on list prices.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head"><h2>Common questions</h2></div>
+    <details>
+      <summary>Why is my S3 bill so much higher than the storage price suggests?</summary>
+      <p>Because storage is rarely the largest line. AWS charges $0.09 per GB to send data out to the internet after the first 100 GB each month. If you store 1 TB but serve 10 TB, egress is roughly 80% of your bill and the $0.023/GB storage rate is almost irrelevant. Put your real numbers into the calculator and look at the Egress column.</p>
+    </details>
+    <details>
+      <summary>Is Cloudflare R2 really free to egress?</summary>
+      <p>Yes — R2 charges $0 for egress with no cap, and that is the entire basis of its pricing model rather than a promotional tier. You still pay $0.015/GB-month for storage plus Class A (write) and Class B (read) operation fees, so R2 is not free. It is free specifically at the bandwidth line, which for most read-heavy workloads is the line that matters.</p>
+    </details>
+    <details>
+      <summary>Which object storage is cheapest overall?</summary>
+      <p>There is no single answer, and any article that gives you one is guessing at your workload. It depends on your egress-to-storage ratio. Store a lot and serve little, and Backblaze B2 at $0.006/GB usually wins. Serve far more than you store, and R2's zero egress wins by a wide margin. Archive-heavy workloads may beat both with S3 Glacier, which this tool does not model.</p>
+    </details>
+    <details>
+      <summary>What is not included in these numbers?</summary>
+      <p>Committed-use discounts, reserved capacity, enterprise agreements, cross-region replication, early-deletion penalties, and per-continent egress rate variation. Wasabi's 90-day minimum retention and Backblaze's 3x free egress allowance <em>are</em> modelled. The <a href="methodology.html">methodology page</a> lists every assumption.</p>
+    </details>
+    <details>
+      <summary>Does this tool send my numbers anywhere?</summary>
+      <p>No. It is plain JavaScript running in your browser with no backend to send anything to. You can disconnect from the internet after the page loads and it will keep working.</p>
+    </details>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head"><h2>Go deeper</h2></div>
+    <div class="grid-2">
+      <a class="card" href="s3-vs-r2.html" style="color:inherit">
+        <h3>AWS S3 vs Cloudflare R2</h3>
+        <p style="color:var(--ink-2);font-size:.9rem;margin-top:8px">The egress math at 1 TB, 10 TB and 100 TB — and the migration caveats that do not show up in a pricing table.</p>
+      </a>
+      <a class="card" href="egress-fees.html" style="color:inherit">
+        <h3>Why bandwidth costs more than storage</h3>
+        <p style="color:var(--ink-2);font-size:.9rem;margin-top:8px">What egress fees are, why they are priced far above cost, and how to estimate yours before the invoice lands.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span class="brand-text">CloudCost Compare</span>
+        </div>
+        <p class="foot-tag">Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces — egress included.</p>
+        <p class="foot-note">Runs entirely in your browser. Nothing you type is uploaded or stored.</p>
+      </div>
+      <div class="foot-col">
+        <h3>This site</h3>
+        <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+      </div>
+      <div class="foot-col">
+        <h3>More free tools</h3>
+        <a href="https://23f3001800.github.io/llm-cost-lab/" title="API vs self-hosted GPU break-even">LLM Cost Lab</a><a href="https://23f3001800.github.io/freelance-take-home/" title="Rate & tax by country">Freelance Take-Home</a><a href="https://23f3001800.github.io/equity-offer-lab/" title="RSUs, options & dilution">Equity Offer Lab</a><a href="https://23f3001800.github.io/openpolicy/" title="Privacy policy & cookie notices">OpenPolicy</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <p>&copy; 2026 CloudCost Compare. Figures are estimates for planning only &mdash; not financial, tax or legal advice.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/base.js"></script>
+<script src="assets/monetize.js"></script><script src="assets/tool.js"></script>
+</body>
+</html>

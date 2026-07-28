@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cloud Egress Fees Explained: Why Bandwidth Costs More Than Storage</title>
+<meta name="description" content="What egress fees are, why cloud providers charge 100x their cost for bandwidth, which providers have dropped them, and how to estimate yours before the bill arrives.">
+<link rel="canonical" href="https://23f3001800.github.io/cloudcost-compare/egress-fees.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cloud Egress Fees Explained: Why Bandwidth Costs More Than Storage">
+<meta property="og:description" content="What egress fees are, why cloud providers charge 100x their cost for bandwidth, which providers have dropped them, and how to estimate yours before the bill arrives.">
+<meta property="og:url" content="https://23f3001800.github.io/cloudcost-compare/egress-fees.html">
+<meta property="og:site_name" content="CloudCost Compare">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cloud Egress Fees Explained: Why Bandwidth Costs More Than Storage">
+<meta name="twitter:description" content="What egress fees are, why cloud providers charge 100x their cost for bandwidth, which providers have dropped them, and how to estimate yours before the bill arrives.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%232f6df6'/%3E%3Ctext%20x='16'%20y='23'%20font-size='19'%20font-family='sans-serif'%20font-weight='700'%20fill='white'%20text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/base.css">
+<style>:root{--accent:#2f6df6;--accent-soft:rgba(47,109,246,.12);}</style>
+<script>
+// Applied before first paint so a dark-mode user never sees a white flash.
+(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.dataset.theme=t;}})();
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"CloudCost Compare","url":"https://23f3001800.github.io/cloudcost-compare/","applicationCategory":"DeveloperApplication","operatingSystem":"Any (browser-based)","description":"Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces \u2014 egress included.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://23f3001800.github.io/cloudcost-compare/"},{"@type":"ListItem","position":2,"name":"Egress explained","item":"https://23f3001800.github.io/cloudcost-compare/egress-fees.html"}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="wrap head-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span class="brand-text">CloudCost Compare</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle colour theme">
+      <span class="ico-sun" aria-hidden="true">&#9788;</span><span class="ico-moon" aria-hidden="true">&#9790;</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero">
+  <div class="wrap hero-inner">
+    <span class="eyebrow">Explainer</span>
+    <h1>Cloud egress fees, explained</h1>
+    <p class="lede">Why moving data out of a cloud costs 50 to 100 times what the bandwidth actually costs the provider — and what changed in the last two years.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap prose">
+    <h2>What egress actually means</h2>
+    <p>Egress is data leaving a provider's network toward the public internet. Uploading to a bucket (ingress) is almost universally free. Downloading from it is not. That asymmetry is deliberate: it is cheap to get your data in and expensive to get it out.</p>
+
+    <h2>The price gap</h2>
+    <p>Wholesale transit bandwidth at scale runs somewhere in the region of $0.05 to $0.50 per <em>terabyte</em>. AWS charges $0.09 per <em>gigabyte</em>, which works out to roughly $90 per terabyte. Even allowing generously for the cost of edge infrastructure, redundancy, and DDoS absorption, the markup is very large.</p>
+    <blockquote>Egress pricing is not primarily a cost-recovery mechanism. It is a switching cost.</blockquote>
+    <p>That is the honest framing. A bill that scales with how much you serve makes leaving expensive in direct proportion to how much you have grown, which is exactly when leaving would otherwise become attractive.</p>
+
+    <h2>What changed</h2>
+    <p>Two things shifted the market:</p>
+    <ul>
+      <li><strong>Cloudflare R2 launched with zero egress</strong> and made it a permanent structural commitment rather than a promotion, forcing the question into every architecture review.</li>
+      <li><strong>The EU Data Act</strong> pushed hyperscalers toward eliminating fees for customers <em>switching providers entirely</em>. AWS, Google and Azure now waive egress charges for full migrations off their platform. This is narrower than it sounds — it covers leaving, not day-to-day serving.</li>
+    </ul>
+    <p>The practical upshot: everyday egress is still expensive on the majors. Only the exit is now free, and only if you exit completely.</p>
+
+    <h2>Current egress rates</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Provider</th><th class="num">Egress / GB</th><th>Free allowance</th></tr></thead>
+        <tbody>
+          <tr><td>Cloudflare R2</td><td class="num">$0.00</td><td>Unlimited</td></tr>
+          <tr><td>Wasabi</td><td class="num">$0.00</td><td>Expected to stay under stored volume</td></tr>
+          <tr><td>Backblaze B2</td><td class="num">$0.01</td><td>3&times; your stored volume, monthly</td></tr>
+          <tr><td>DigitalOcean Spaces</td><td class="num">$0.01</td><td>1 TB included in the $5 plan</td></tr>
+          <tr><td>Azure Blob</td><td class="num">$0.087</td><td>100 GB / month</td></tr>
+          <tr><td>AWS S3</td><td class="num">$0.09</td><td>100 GB / month</td></tr>
+          <tr><td>Google Cloud Storage</td><td class="num">$0.12</td><td>None</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:.86rem;color:var(--ink-3)">US/standard regions, list prices, first tier. Rates on the majors vary by destination continent and step down at very high volume.</p>
+
+    <div class="ad-slot"></div>
+
+    <h2>Estimating your egress before the bill arrives</h2>
+    <p>Most teams discover their egress number retrospectively. You can get close in advance:</p>
+    <ol>
+      <li><strong>From your CDN or analytics:</strong> total bytes served in a month is usually a direct readout. This is the most reliable source.</li>
+      <li><strong>From average object size:</strong> multiply average downloaded object size by monthly download count. A 2 MB image served 5 million times is 10 TB — which is $900/month on S3 and $0 on R2.</li>
+      <li><strong>Do not forget internal traffic.</strong> Cross-region replication, backups pulled to another cloud, and CI pipelines fetching artifacts all count. These are frequently the invisible half of the bill.</li>
+    </ol>
+
+    <h2>Four ways to cut it</h2>
+    <ul>
+      <li><strong>Put a CDN in front.</strong> A cache hit never touches the bucket. Cloudflare and Bunny both have zero-rated or very cheap egress agreements with major storage providers.</li>
+      <li><strong>Compress and right-size.</strong> Serving AVIF instead of PNG can cut image bytes by 50–70%. Egress is billed on bytes, so this is a direct linear saving.</li>
+      <li><strong>Move the compute to the data.</strong> If you are pulling 5 TB out to process it elsewhere, run the processing in the same region instead.</li>
+      <li><strong>Pick a zero-egress provider for the read-heavy bucket.</strong> You do not have to migrate everything. Splitting hot public assets onto R2 while archives stay on S3 Glacier is a common and sensible pattern.</li>
+    </ul>
+
+    <h2>Work out your number</h2>
+    <p>The <a href="index.html">cost calculator</a> compares seven providers with your storage, egress and request volumes, showing the egress line separately so you can see exactly how much of your bill is bandwidth. If it is more than about 60%, switching provider will beat any other optimisation you make this quarter.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span class="brand-text">CloudCost Compare</span>
+        </div>
+        <p class="foot-tag">Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces — egress included.</p>
+        <p class="foot-note">Runs entirely in your browser. Nothing you type is uploaded or stored.</p>
+      </div>
+      <div class="foot-col">
+        <h3>This site</h3>
+        <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+      </div>
+      <div class="foot-col">
+        <h3>More free tools</h3>
+        <a href="https://23f3001800.github.io/llm-cost-lab/" title="API vs self-hosted GPU break-even">LLM Cost Lab</a><a href="https://23f3001800.github.io/freelance-take-home/" title="Rate & tax by country">Freelance Take-Home</a><a href="https://23f3001800.github.io/equity-offer-lab/" title="RSUs, options & dilution">Equity Offer Lab</a><a href="https://23f3001800.github.io/openpolicy/" title="Privacy policy & cookie notices">OpenPolicy</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <p>&copy; 2026 CloudCost Compare. Figures are estimates for planning only &mdash; not financial, tax or legal advice.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/base.js"></script>
+<script src="assets/monetize.js"></script>
+</body>
+</html>

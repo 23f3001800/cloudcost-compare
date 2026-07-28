@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology & Pricing Sources — CloudCost Compare</title>
+<meta name="description" content="Exactly how CloudCost Compare calculates each provider's monthly cost, which list prices are used, when they were last verified, and the assumptions that could make your real bill differ.">
+<link rel="canonical" href="https://23f3001800.github.io/cloudcost-compare/methodology.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Methodology & Pricing Sources — CloudCost Compare">
+<meta property="og:description" content="Exactly how CloudCost Compare calculates each provider's monthly cost, which list prices are used, when they were last verified, and the assumptions that could make your real bill differ.">
+<meta property="og:url" content="https://23f3001800.github.io/cloudcost-compare/methodology.html">
+<meta property="og:site_name" content="CloudCost Compare">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Methodology & Pricing Sources — CloudCost Compare">
+<meta name="twitter:description" content="Exactly how CloudCost Compare calculates each provider's monthly cost, which list prices are used, when they were last verified, and the assumptions that could make your real bill differ.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%232f6df6'/%3E%3Ctext%20x='16'%20y='23'%20font-size='19'%20font-family='sans-serif'%20font-weight='700'%20fill='white'%20text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/base.css">
+<style>:root{--accent:#2f6df6;--accent-soft:rgba(47,109,246,.12);}</style>
+<script>
+// Applied before first paint so a dark-mode user never sees a white flash.
+(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.dataset.theme=t;}})();
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"CloudCost Compare","url":"https://23f3001800.github.io/cloudcost-compare/","applicationCategory":"DeveloperApplication","operatingSystem":"Any (browser-based)","description":"Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces \u2014 egress included.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://23f3001800.github.io/cloudcost-compare/"},{"@type":"ListItem","position":2,"name":"Methodology","item":"https://23f3001800.github.io/cloudcost-compare/methodology.html"}]}]}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="wrap head-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">C</span>
+      <span class="brand-text">CloudCost Compare</span>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle colour theme">
+      <span class="ico-sun" aria-hidden="true">&#9788;</span><span class="ico-moon" aria-hidden="true">&#9790;</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero">
+  <div class="wrap hero-inner">
+    <span class="eyebrow">Transparency</span>
+    <h1>Methodology &amp; pricing sources</h1>
+    <p class="lede">Every number this calculator produces, and every assumption behind it. If a figure looks wrong to you, this page should let you find out why in under a minute.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap prose">
+    <h2>The formula</h2>
+    <p>For each provider the monthly cost is:</p>
+    <p><code>total = base_plan + (billable_storage &times; storage_rate) + (billable_egress &times; egress_rate) + request_costs</code></p>
+    <p>where</p>
+    <ul>
+      <li><code>billable_storage</code> is your stored GB, raised to the provider's minimum if one applies, then reduced by any storage included in a base plan.</li>
+      <li><code>billable_egress</code> is your monthly egress minus the provider's free allowance. That allowance is a flat monthly figure for most providers, a multiple of stored volume for Backblaze B2, and a bundled amount for DigitalOcean Spaces.</li>
+      <li><code>request_costs</code> is writes &divide; 1,000,000 &times; Class A rate, plus reads &divide; 1,000,000 &times; Class B rate.</li>
+    </ul>
+
+    <h2>Prices used</h2>
+    <p>List prices for standard (hot) tiers in a US region, verified <strong>27 July 2026</strong>.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Provider</th><th class="num">Storage /GB-mo</th><th class="num">Egress /GB</th><th class="num">Writes /M</th><th class="num">Reads /M</th></tr></thead>
+        <tbody>
+          <tr><td>Cloudflare R2</td><td class="num">$0.015</td><td class="num">$0.00</td><td class="num">$4.50</td><td class="num">$0.36</td></tr>
+          <tr><td>AWS S3 Standard</td><td class="num">$0.023</td><td class="num">$0.09</td><td class="num">$5.00</td><td class="num">$0.40</td></tr>
+          <tr><td>Backblaze B2</td><td class="num">$0.006</td><td class="num">$0.01</td><td class="num">$0.00</td><td class="num">$0.40</td></tr>
+          <tr><td>Wasabi</td><td class="num">$0.00699</td><td class="num">$0.00</td><td class="num">$0.00</td><td class="num">$0.00</td></tr>
+          <tr><td>Google Cloud Storage</td><td class="num">$0.020</td><td class="num">$0.12</td><td class="num">$5.00</td><td class="num">$0.40</td></tr>
+          <tr><td>Azure Blob (Hot)</td><td class="num">$0.018</td><td class="num">$0.087</td><td class="num">$5.50</td><td class="num">$0.44</td></tr>
+          <tr><td>DigitalOcean Spaces</td><td class="num">$0.020</td><td class="num">$0.01</td><td class="num">$0.00</td><td class="num">$0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Provider-specific rules that are modelled</h3>
+    <ul>
+      <li><strong>AWS S3 / Azure Blob</strong> — first 100 GB of egress each month is free.</li>
+      <li><strong>Backblaze B2</strong> — egress is free up to three times your average stored volume, then $0.01/GB. Class A (write) transactions are free.</li>
+      <li><strong>Wasabi</strong> — bills a 1 TB minimum regardless of actual usage. No egress or request charges.</li>
+      <li><strong>DigitalOcean Spaces</strong> — $5/month base covering 250 GB stored and 1 TB egress, with overage beyond that.</li>
+      <li><strong>Google Cloud Storage</strong> — no free egress allowance in this model.</li>
+    </ul>
+
+    <h2>What is deliberately not modelled</h2>
+    <p>These are real costs. They are excluded because they depend on contracts or usage patterns this calculator cannot see, and guessing at them would make the output less trustworthy, not more.</p>
+    <ul>
+      <li>Committed-use discounts, reserved capacity, enterprise agreements and negotiated rates. Large accounts routinely pay well below list.</li>
+      <li>Cold and archive tiers (S3 Glacier, Azure Archive, GCS Coldline/Archive). For genuinely cold data these are dramatically cheaper than anything modelled here.</li>
+      <li>Per-continent egress rate variation. Serving to Asia-Pacific or South America costs more than to North America on all three majors.</li>
+      <li>Early-deletion penalties, including Wasabi's 90-day minimum retention.</li>
+      <li>Cross-region replication, inter-zone transfer, and data-transfer-out to other cloud services rather than the internet.</li>
+      <li>Taxes, support plans, and any CDN sitting in front of the bucket.</li>
+    </ul>
+
+    <h2>Accuracy and how to check it</h2>
+    <p>Cloud pricing changes without much notice, and a page like this drifts. Treat the output as a planning estimate accurate to within a few percent for a straightforward workload, not as a quote.</p>
+    <p>Before making a migration decision on these numbers, confirm the two or three rates that actually drive your result against the vendor's own pricing page:</p>
+    <ul>
+      <li><a href="https://aws.amazon.com/s3/pricing/" rel="noopener" target="_blank">AWS S3 pricing</a></li>
+      <li><a href="https://developers.cloudflare.com/r2/pricing/" rel="noopener" target="_blank">Cloudflare R2 pricing</a></li>
+      <li><a href="https://www.backblaze.com/cloud-storage/pricing" rel="noopener" target="_blank">Backblaze B2 pricing</a></li>
+      <li><a href="https://wasabi.com/pricing" rel="noopener" target="_blank">Wasabi pricing</a></li>
+      <li><a href="https://cloud.google.com/storage/pricing" rel="noopener" target="_blank">Google Cloud Storage pricing</a></li>
+      <li><a href="https://azure.microsoft.com/pricing/details/storage/blobs/" rel="noopener" target="_blank">Azure Blob Storage pricing</a></li>
+      <li><a href="https://www.digitalocean.com/pricing/spaces-object-storage" rel="noopener" target="_blank">DigitalOcean Spaces pricing</a></li>
+    </ul>
+
+    <h2>Privacy</h2>
+    <p>The calculator is client-side JavaScript. Your inputs never leave the browser because there is no server to send them to. The site is served as static files from GitHub Pages.</p>
+
+    <h2>Corrections</h2>
+    <p>If a rate here is out of date or a provider rule is modelled wrongly, that is a bug worth fixing — the source is public and the pricing table above is a single data structure in <code>assets/tool.js</code>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span class="brand-text">CloudCost Compare</span>
+        </div>
+        <p class="foot-tag">Real object storage costs across S3, R2, B2, Wasabi, GCS, Azure and Spaces — egress included.</p>
+        <p class="foot-note">Runs entirely in your browser. Nothing you type is uploaded or stored.</p>
+      </div>
+      <div class="foot-col">
+        <h3>This site</h3>
+        <a href="index.html">Calculator</a><a href="s3-vs-r2.html">S3 vs R2</a><a href="egress-fees.html">Egress explained</a><a href="methodology.html">Methodology</a>
+      </div>
+      <div class="foot-col">
+        <h3>More free tools</h3>
+        <a href="https://23f3001800.github.io/llm-cost-lab/" title="API vs self-hosted GPU break-even">LLM Cost Lab</a><a href="https://23f3001800.github.io/freelance-take-home/" title="Rate & tax by country">Freelance Take-Home</a><a href="https://23f3001800.github.io/equity-offer-lab/" title="RSUs, options & dilution">Equity Offer Lab</a><a href="https://23f3001800.github.io/openpolicy/" title="Privacy policy & cookie notices">OpenPolicy</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <p>&copy; 2026 CloudCost Compare. Figures are estimates for planning only &mdash; not financial, tax or legal advice.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/base.js"></script>
+<script src="assets/monetize.js"></script>
+</body>
+</html>

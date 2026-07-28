@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://23f3001800.github.io/cloudcost-compare/sitemap.xml
